@@ -24,6 +24,19 @@
       	filePicker.show(folderId, accessToken, {
             container: '.container'
         });
+      	
+     // Attach event listener for when the choose button is pressed
+      	filePicker.addListener('choose', function(items) {
+      	  // do something with the items array
+      	  alert("choose"+JSON.stringify(items, null, 2));
+      	  console.log(JSON.stringify(items, null, 2));
+      	});
+
+      	// Attach event listener for when the cancel button is pressed
+      	filePicker.addListener('cancel', function() {
+      	  // do something
+      	  alert("cancel");
+      	});
     </script>
 </body>
 </html>

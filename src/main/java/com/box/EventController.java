@@ -1,102 +1,82 @@
 package com.box;
 
-import java.io.IOException;
-import java.time.LocalTime;
-import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.box.sdk.BoxDeveloperEditionAPIConnection;
 import com.box.sdk.BoxEvent;
 import com.box.sdk.EventListener;
 import com.box.sdk.EventStream;
-import com.box.util.BoxConnections;
-
-import reactor.core.publisher.Flux;
+import com.box.service.BoxSDK;
 
 @Controller
 public class EventController {
-	
-    class XDto{
-        final int x;
-        public XDto(int x) {this.x = x;}
-    }
 
-    Stream<XDto> produceX(){
-        return IntStream.range(1,10).mapToObj(i -> {
-            System.out.println("produce "+i);
-            try {Thread.sleep(1000);} catch (InterruptedException e) {e.printStackTrace();}
-            return new XDto(i);
-        });
-    }
+	private static final Logger logger = LoggerFactory.getLogger(EventController.class);
 
-    /*
-	@GetMapping(path = "/events", produces = "text/event-stream")
-		Flux<XDto> getEvents()	{
-		System.out.println("Events ..");
-			return Flux.fromStream(produceX());
+	private BoxSDK javaSDK;
 
-		}*/
-	
-    /*
-	@RequestMapping("/sseTest")
-    public ResponseBodyEmitter handleRequest () {
+	@Autowired
+	public EventController(BoxSDK javaSDK) {
+		this.javaSDK = javaSDK;
+	}
 
-        final SseEmitter emitter = new SseEmitter();
-        ExecutorService service = Executors.newSingleThreadExecutor();
-        service.execute(() -> {
-            for (int i = 0; i < 500; i++) {
-                try {
-                    emitter.send(LocalTime.now().toString() , MediaType.TEXT_PLAIN);
+	class XDto {
+		final int x;
 
-                    Thread.sleep(200);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    emitter.completeWithError(e);
-                    return;
-                }
-            }
-            emitter.complete();
-        });
+		public XDto(int x) {
+			this.x = x;
+		}
+	}
 
-        return emitter;
-    }*/
-    
-    
-	
+	Stream<XDto> produceX() {
+		return IntStream.range(1, 10).mapToObj(i -> {
+			logger.info("produce " + i);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return new XDto(i);
+		});
+	}
+
 	@RequestMapping("/events")
-    public ResponseBodyEmitter handleRequest () {
-		System.out.println("Events controller -- ");
-        final SseEmitter emitter = new SseEmitter();
-        ExecutorService service = Executors.newSingleThreadExecutor();
-        service.execute(() -> {
-        	
-        	BoxDeveloperEditionAPIConnection api = BoxConnections.getServiceAccountConnection();
-        	EventStream stream = new EventStream(api);
-        	stream.addListener(new EventListener() {
-        	    public void onEvent(BoxEvent event) {
-        	        // Handle the event.
-                    try {
-                    	System.out.println("--on event -- "+event.getType());
-        	    	emitter.send(event.getType()+ " - " +event.getCreatedAt() , MediaType.TEXT_PLAIN);
-                    }catch(Exception e)	{
-                        e.printStackTrace();
-                        emitter.completeWithError(e);
-                        return;
+	public ResponseBodyEmitter handleRequest() {
+		logger.info("Events controller -- ");
+		final SseEmitter emitter = new SseEmitter();
+		ExecutorService service = Executors.newSingleThreadExecutor();
+		service.execute(() -> {
 
-                    }
-        	    }
+			EventStream stream = null;
+			try {
+				stream = new EventStream(javaSDK.getServiceAccountConnection());
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+			}
+			stream.addListener(new EventListener() {
+				public void onEvent(BoxEvent event) {
+					// Handle the event.
+					try {
+						logger.info("--on event -- " + event.getType());
+						emitter.send(event.getType() + " - " + event.getCreatedAt(), MediaType.TEXT_PLAIN);
+					} catch (Exception e) {
+						e.printStackTrace();
+						emitter.completeWithError(e);
+						return;
+
+					}
+				}
 
 				@Override
 				public boolean onException(Throwable arg0) {
@@ -107,15 +87,14 @@ public class EventController {
 				@Override
 				public void onNextPosition(long arg0) {
 					// TODO Auto-generated method stub
-					
-				}
-        	});
-        	stream.start();
-            //emitter.complete();
-        });
 
-        return emitter;
-    } 
-	
+				}
+			});
+			stream.start();
+			// emitter.complete();
+		});
+
+		return emitter;
+	}
 
 }

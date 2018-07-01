@@ -7,28 +7,18 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-
-import com.box.util.BoxConnections;
+import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
+@EnableCaching
 public class BoxPlatformApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(BoxPlatformApplication.class, args);
 
-		/* Connect Box via Dev token
-		BoxAPIConnection api = new BoxAPIConnection("t3sT1RK2SAwvqP6NODxhGeabuaVpfHJP");
-		BoxFolder rootFolder = BoxFolder.getRootFolder(api);
-		for (BoxItem.Info itemInfo : rootFolder) {
-		    System.out.format("[%s] %s\n", itemInfo.getID(), itemInfo.getName());
-		}
-		*/
 		BoxPlatformApplication boxsdk = new BoxPlatformApplication();
-		new BoxConnections().getServiceAccountAccessToken();
 		boxsdk.configureJCE();
 		
-//		EventWebClient event = new EventWebClient();
-//		System.out.println(event.getResult());
 
 	}
 	
