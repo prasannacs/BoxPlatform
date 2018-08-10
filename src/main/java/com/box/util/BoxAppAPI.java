@@ -14,6 +14,8 @@ import com.box.sdk.BoxGroup;
 import com.box.sdk.BoxGroupMembership;
 import com.box.sdk.BoxUser;
 import com.box.sdk.CreateUserParams;
+import com.box.service.BoxJavaSDK;
+import com.box.service.BoxSDK;
 
 public class BoxAppAPI {
 	
@@ -22,8 +24,10 @@ public class BoxAppAPI {
 	
 	private static String CLIENT_DOCS_FOLDER_ID = "50549221099";
 	private static String CLIENTS_GROUP_ID = "1130473120";
+	private static String SFDC_ACCOUNT_FOLDER_ID = "50905251887";
+	private static String LIBERTY_CLIENTS_GROUP_ID = "1151502144";
 	
-	public static String createOrLoginUser(BoxDeveloperEditionAPIConnection api, String userName, String jobTitle)	{
+	public static String createOrLoginUser(BoxDeveloperEditionAPIConnection api, String userName, String jobTitle) throws Exception	{
 		long spaceAmount = 1073741824;
 
 		// Create param object
@@ -36,11 +40,32 @@ public class BoxAppAPI {
 		if( isUser == null )	{
 			BoxUser.Info createdUserInfo = BoxUser.createAppUser(api, userName);
 			logger.info("app user created");
-			createAppUserFolders(api, createdUserInfo.getID(), userName);
+			createAppUserFoldersForSalesforce(api,createdUserInfo.getID(), userName);
 			return createdUserInfo.getID();
 		} else	{
 			return isUser;
 		}
+	}
+	
+	private static void createAppUserFoldersForSalesforce(BoxDeveloperEditionAPIConnection api,String userId, String userName) throws Exception	{
+		
+		String SALESFORCE_USER_ID = "3783585747";
+		BoxSDK sdk = new BoxJavaSDK();
+		BoxDeveloperEditionAPIConnection collab_api = sdk.getAppUserConnection(SALESFORCE_USER_ID);
+		
+		
+		BoxUser user = new BoxUser(api, userId);
+		BoxGroup group = new BoxGroup(api, LIBERTY_CLIENTS_GROUP_ID);
+		BoxGroupMembership.Info groupMembershipInfo = group.addMembership(user);
+
+		BoxFolder parentFolder = new BoxFolder(collab_api, SFDC_ACCOUNT_FOLDER_ID);
+		BoxFolder.Info childFolderInfo = parentFolder.createFolder(userName+" Docs");
+		childFolderInfo.getResource().createFolder("Credit card statements");
+		childFolderInfo.getResource().createFolder("Tax returns");
+		// add collaboration to the newly created child folder so that only this app user and the managed user can see
+		BoxCollaborator cuser = new BoxUser(collab_api, userId);
+		BoxFolder folder = new BoxFolder(collab_api, childFolderInfo.getID());
+		folder.collaborate(user, BoxCollaboration.Role.PREVIEWER_UPLOADER);
 	}
 	
 	private static void createAppUserFolders(BoxDeveloperEditionAPIConnection api, String userId, String userName)	{

@@ -2,6 +2,7 @@ package com.box;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,9 +11,18 @@ import com.box.sdk.BoxDeveloperEditionAPIConnection;
 import com.box.sdk.BoxUser;
 import com.box.sdk.EncryptionAlgorithm;
 import com.box.sdk.JWTEncryptionPreferences;
+import com.box.service.BoxSDK;
 
 @Controller
 public class ContentExplorerController {
+	
+	private BoxSDK javaSDK;
+	
+	@Autowired
+	public ContentExplorerController(BoxSDK javaSDK)	{
+		this.javaSDK = javaSDK;
+	}	
+
 
 	@RequestMapping("/content-explorer")
 	public String contenetExplorer(Map<String, Object> model) {
@@ -20,6 +30,15 @@ public class ContentExplorerController {
 		model.put("accessToken", appuserJWTCrednetials());
 		return "content-explorer";
 	}
+	
+	@RequestMapping("/content-previewer")
+	public String contenetPreviewer(Map<String, Object> model) throws Exception	{
+		System.out.println("content explorer");
+		model.put("accessToken", javaSDK.getServiceAccountAccessToken());
+		model.put("fileId", "300817774971");
+		return "content-previewer";
+	}
+	
 
 	@RequestMapping("/content-picker")
 	public String contentPicker(Map<String, Object> model) {

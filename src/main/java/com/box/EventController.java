@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.box.sdk.BoxEvent;
 import com.box.sdk.EventListener;
 import com.box.sdk.EventStream;
+import com.box.service.BoxJavaSDK;
 import com.box.service.BoxSDK;
 
 @Controller
@@ -52,15 +54,15 @@ public class EventController {
 	}
 
 	@RequestMapping("/events")
-	public ResponseBodyEmitter handleRequest() {
-		logger.info("Events controller -- ");
+	public ResponseBodyEmitter handleRequest(@RequestParam("userId") String userId) {
+		logger.info("Events controller -- "+userId);
 		final SseEmitter emitter = new SseEmitter();
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		service.execute(() -> {
 
 			EventStream stream = null;
 			try {
-				stream = new EventStream(javaSDK.getServiceAccountConnection());
+				stream = new EventStream(javaSDK.getAppUserConnection(userId));
 			} catch (Exception e) {
 				logger.error(e.getMessage());
 			}
@@ -81,13 +83,14 @@ public class EventController {
 				@Override
 				public boolean onException(Throwable arg0) {
 					// TODO Auto-generated method stub
+					logger.info("Exception in event controller");
 					return false;
 				}
 
 				@Override
 				public void onNextPosition(long arg0) {
 					// TODO Auto-generated method stub
-
+					logger.info("Stream next position "+arg0);
 				}
 			});
 			stream.start();

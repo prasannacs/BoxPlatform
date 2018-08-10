@@ -40,6 +40,7 @@
 
 			<h1>Welcome ${userName}</h1>
 			<h6>Access Token: ${accessToken}</h6>
+			<h6>User Id: ${userId}</h6>
 			<a href="/logout">Logout</a>
 
 		</div>
@@ -52,7 +53,7 @@
 
 				<script>
 					if (typeof (EventSource) !== "undefined") {
-						var source = new EventSource("/events");
+						var source = new EventSource("/events?userId=${userId}");
 						source.onmessage = function(event) {
 							document.getElementById("result").innerHTML += event.data
 									+ "<br>";
@@ -66,10 +67,9 @@
 
 			<div class="col-md-9" style="background-color: white;">
 				<div class="row">
-					<div class="col-md-5" style="background-color: white;">
-						<h4>My Portfolio</h4>
-						<img src="/css/invest-graph.jpg" alt="Italian Trulli"
-							style="width: 480px; height: 240px;">
+					<div class="col-md-5" style="background-color: white; style="width: 480px; height: 240px;">
+						<h4>Loan Id: A328XD23</h4>
+						<img src="/css/loan-progress.jpg" alt="Italian Trulli" height="100%" width = "100%">
 
 					</div>
 										<div class="col-md-3" style="background-color: white;">
@@ -81,7 +81,7 @@
 					
 				</div>
 				<div class="row">
-					<h4>This is your document vault with ACME bank</h4>
+					<h4>This is your document vault with Liberty Loans</h4>
 					<h5>Please upload your W2 and pay stubs</h5>
 
 					<div class="explorer-container"

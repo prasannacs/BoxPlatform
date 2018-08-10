@@ -40,6 +40,7 @@ public class BoxJavaSDK implements BoxSDK	{
 		logger.info("Cache not used --> for user access token");
 		BoxDeveloperEditionAPIConnection session = new BoxDeveloperEditionAPIConnection(userId, DeveloperEditionEntityType.USER, getBoxConfig(), getAccessTokenCache());
 		String userToken = session.getAccessToken();
+		logger.info("User access token for "+userId+" access token "+userToken);
 		return userToken;
 	}
 	
@@ -57,6 +58,12 @@ public class BoxJavaSDK implements BoxSDK	{
 		BoxDeveloperEditionAPIConnection api = BoxDeveloperEditionAPIConnection.getAppEnterpriseConnection(boxConfig);
 		return api;
 		
+	}
+	
+	@Override
+	public BoxDeveloperEditionAPIConnection getAppUserConnection(String userId)	throws Exception {
+		BoxDeveloperEditionAPIConnection api = BoxDeveloperEditionAPIConnection.getAppUserConnection(userId, getBoxConfig(), getAccessTokenCache());
+		return api;
 	}
 	
 	private BoxConfig getBoxConfig() throws Exception	{

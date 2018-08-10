@@ -46,6 +46,7 @@ public class LoginController {
 		logger.info("is managed user -- "+BoxAppAPI.isManagedUser(javaSDK.getServiceAccountConnection(), userName));
 		model.put("userName", userInfo.getName());
 		model.put("accessToken",userToken);
+		model.put("userId", userId);
 		if(userInfo.getLogin().endsWith("@boxdevedition.com"))
 			return "app-user";
 		else

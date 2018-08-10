@@ -16,5 +16,6 @@ public interface BoxSDK {
 	public String getServiceAccountAccessToken() throws Exception;
 	public String getAppUserAccessToken(String userId) throws Exception;
 	public BoxDeveloperEditionAPIConnection getServiceAccountConnection() throws Exception;
+	public BoxDeveloperEditionAPIConnection getAppUserConnection(String userId)	throws Exception;
 
 }
