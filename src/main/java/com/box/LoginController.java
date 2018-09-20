@@ -1,5 +1,9 @@
 package com.box;
 
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -38,6 +42,18 @@ public class LoginController {
 		model.put("message", "Login action!..");
 		// create user
 		String userId = BoxAppAPI.createOrLoginUser(javaSDK.getServiceAccountConnection(), userName, "Some User");
+		
+		/*
+		//set the proxy stuff
+		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 80));
+		javaSDK.getServiceAccountConnection().setProxy(proxy);
+		javaSDK.getServiceAccountConnection().setProxyUsername("proxy_username");
+		javaSDK.getServiceAccountConnection().setProxyUsername("proxy_password");
+		logger.debug("Proxy username : "+javaSDK.getServiceAccountConnection().getProxyUsername());
+		logger.debug("Proxy password : "+javaSDK.getServiceAccountConnection().getProxyPassword());
+		// proxy stuff ends
+		 */
+		
 		String userToken = javaSDK.getAppUserAccessToken(userId);
 		logger.info("User Token "+userToken+" for userId "+userId);
 		BoxUser.Info userInfo = BoxAppAPI.getBoxUserInfo(javaSDK.getServiceAccountConnection(), userName);
